@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClinicalEncryption</title>
+    <link rel="icon" href="./logo.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #2b2b3b;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #7287fd;
+            margin-bottom: 20px;
+        }
+        .file-upload {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #7287fd;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #333;
+            color: #7287fd;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-upload:hover {
+            background-color: #444;
+        }
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-upload-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #7287fd;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #b4befe;
+        }
+        .form-group {
+            margin-top: 15px;
+        }
+        .progress-bar {
+            margin-top: 15px;
+            width: 100%;
+            background-color: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+            display: none;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            background-color: #7287fd;
+            width: 0;
+            animation: loading 2s infinite;
+        }
+        @keyframes loading {
+            0% { width: 0; }
+            50% { width: 50%; }
+            100% { width: 100%; }
+        }
+        .file-upload-text {
+            margin-top: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Encriptación de Historias Clínicas</h1>
+        <div class="file-upload" id="fileUploadContainer">
+            <span class="file-upload-icon">⬇</span>
+            <span id="fileUploadText">Puede arrastrar y soltar archivos aquí o hacer clic para seleccionarlos</span>
+            <input type="file" id="fileInput" accept=".docx,.pdf,.xlsx,.text">
+        </div>
+        <div class="form-group">
+            <label for="key">Clave secreta:</label>
+            <input type="text" id="key" placeholder="Ingrese su clave secreta" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background-color: #333; color: #fff;">
+        </div>
+        <button onclick="handleFileAction()">Procesar Archivo</button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-bar-inner" id="progressBarInner"></div>
+        </div>
+
+        <div id="statusText" class="file-upload-text"></div>
+    </div>
+
+    <script src="./crypto-js.min.js"></script>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileUploadText = document.getElementById('fileUploadText');
+        const progressBar = document.getElementById('progressBar');
+        const progressBarInner = document.getElementById('progressBarInner');
+        const statusText = document.getElementById('statusText');
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                fileUploadText.textContent = `${file.name}`;
+            }
+        });
+
+        function updateProgressBar(percent) {
+            progressBar.style.display = 'block';
+            progressBarInner.style.width = `${percent}%`;
+        }
+
+        function setStatusText(message) {
+            statusText.textContent = message;
+        }
+
+        async function handleFileAction() {
+            const file = fileInput.files[0];
+            const key = normalizeKey(document.getElementById('key').value);
+
+            if (!file || !key) {
+                alert('Por favor, sube un archivo y proporciona una clave.');
+                return;
+            }
+
+            setStatusText('Procesando archivo...');
+            progressBarInner.style.animation = "loading 2s infinite";
+            progressBar.style.display = 'block';
+
+            if (file.name.endsWith('.text')) {
+                await decryptFile(file, key);
+            } else {
+                await encryptFile(file, key);
+            }
+
+            setStatusText('Proceso completado.');
+            progressBar.style.display = 'none';
+            progressBarInner.style.animation = "none";
+        }
+
+        function normalizeKey(key) {
+            const keySize = 32;
+            if (key.length > keySize) {
+                return CryptoJS.enc.Utf8.parse(key.substring(0, keySize));
+            } else {
+                while (key.length < keySize) {
+                    key += "0";
+                }
+                return CryptoJS.enc.Utf8.parse(key);
+            }
+        }
+
+        async function encryptFile(file, key) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const wordArray = CryptoJS.lib.WordArray.create(e.target.result); // Leer el archivo como WordArray
+                const iv = CryptoJS.lib.WordArray.random(16); // Generar IV aleatorio
+                const encrypted = CryptoJS.AES.encrypt(wordArray, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }).toString();
+
+                // Concatenar IV y datos encriptados
+                const encryptedData = iv.toString(CryptoJS.enc.Hex) + encrypted;
+
+                // Crear Blob y descargarlo con el nombre modificado
+                const blob = new Blob([encryptedData], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // Cambiar el nombre del archivo para que incluya "encriptado "
+                const originalName = file.name.endsWith('.text') ? file.name.slice(0, -5) : file.name;
+                a.download = `encriptado ${originalName}.text`;
+
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function decryptFile(file, key) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const encryptedData = e.target.result;
+                const ivHex = encryptedData.substring(0, 32);
+                const ciphertext = encryptedData.substring(32);
+
+                const iv = CryptoJS.enc.Hex.parse(ivHex);
+                const decrypted = CryptoJS.AES.decrypt(ciphertext, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+
+                const byteArray = decrypted.toString(CryptoJS.enc.Latin1);
+                const arrayBuffer = new ArrayBuffer(byteArray.length);
+                const uintArray = new Uint8Array(arrayBuffer);
+                for (let i = 0; i < byteArray.length; i++) {
+                    uintArray[i] = byteArray.charCodeAt(i);
+                }
+
+                const originalName = file.name.replace('.text', '');
+                const blob = new Blob([arrayBuffer]);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = originalName;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
