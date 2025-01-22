@@ -1,4 +1,15 @@
 # clinicalencryption
+
+This code creates a web page to encrypt and decrypt files using the AES (Advanced Encryption Standard) algorithm in CBC (Cipher Block Chaining) mode with PKCS7 padding. The user uploads a file, enters a secret key, and chooses whether to encrypt or decrypt the file. This HTML code implements a web page for encrypting and decrypting files using the AES symmetric encryption method in CBC (Cipher Block Chaining) mode with PKCS7 padding. Below, I will explain each part of the code.
+
+**Encryption Method Used:**  
+The encryption method used in this code is AES (Advanced Encryption Standard), specifically in CBC (Cipher Block Chaining) mode. AES symmetric encryption uses the same key for both encrypting and decrypting the data. CBC mode is an encryption operation mode that enhances AES security by incorporating an IV (Initialization Vector), which ensures that the same plaintext does not always produce the same ciphertext.
+
+**AES CBC Encryption:**  
+- **AES:** Used to encrypt and decrypt data.  
+- **CBC Mode:** A block cipher mode of operation that uses an IV (Initialization Vector) to chain encryption blocks, ensuring that identical plaintexts do not produce the same ciphertext.  
+- **PKCS7 Padding:** A standard used to pad data blocks to match AES’s expected block size (16 bytes).  
+///////////////////////////////////////////////////////////////////////////////////////////////
 Este código crea una página web para encriptar y desencriptar archivos usando el algoritmo AES (Advanced Encryption Standard) en modo CBC (Cipher Block Chaining) con relleno PKCS7. El usuario carga un archivo, ingresa una clave secreta y elige si quiere encriptar o desencriptar el archivo.
 Este código HTML implementa una página web para encriptar y desencriptar archivos utilizando un método de cifrado simétrico AES (Advanced Encryption Standard) con el modo CBC (Cipher Block Chaining) y el relleno PKCS7. A continuación, te explicaré cada parte del código.
 
