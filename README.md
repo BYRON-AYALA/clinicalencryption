@@ -9,7 +9,8 @@ The encryption method used in this code is AES (Advanced Encryption Standard), s
 - **AES:** Used to encrypt and decrypt data.  
 - **CBC Mode:** A block cipher mode of operation that uses an IV (Initialization Vector) to chain encryption blocks, ensuring that identical plaintexts do not produce the same ciphertext.  
 - **PKCS7 Padding:** A standard used to pad data blocks to match AES’s expected block size (16 bytes).  
-/div
+______________________________________________________
+______________________________________________________
 
 Este código crea una página web para encriptar y desencriptar archivos usando el algoritmo AES (Advanced Encryption Standard) en modo CBC (Cipher Block Chaining) con relleno PKCS7. El usuario carga un archivo, ingresa una clave secreta y elige si quiere encriptar o desencriptar el archivo.
 Este código HTML implementa una página web para encriptar y desencriptar archivos utilizando un método de cifrado simétrico AES (Advanced Encryption Standard) con el modo CBC (Cipher Block Chaining) y el relleno PKCS7. A continuación, te explicaré cada parte del código.
